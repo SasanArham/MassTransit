@@ -11,12 +11,15 @@ using System.Threading.Tasks;
 
 namespace WorkerProject.Consumer
 {
-    public class WorkerConsumer : IConsumer<GettingStarted.Contracts.GettingStarted>
+    public class WorkerConsumer : IConsumer<Batch<GettingStarted.Contracts.GettingStarted> >
     {
 
-        public async Task Consume(ConsumeContext<GettingStarted.Contracts.GettingStarted> context)
+        public async Task Consume(ConsumeContext<Batch<GettingStarted.Contracts.GettingStarted>> context)
         {
-            Console.WriteLine(context.Message.Value);
+            for (int i = 0; i < context.Message.Length; i++)
+            {
+                Console.WriteLine($"message {i}: {context.Message[i].Message.Value} ");
+            }
         }
     }
 }

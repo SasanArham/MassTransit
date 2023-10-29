@@ -1,4 +1,6 @@
 ﻿using MassTransit;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace WorkerProject.Consumer
 {
@@ -11,12 +13,14 @@ namespace WorkerProject.Consumer
 
             // limit the number of messages consumed concurrently
             // this applies to the consumer only, not the endpoint
-            this.ConcurrentMessageLimit = 100;
+            
         }
 
         protected override void ConfigureConsumer(IReceiveEndpointConfigurator endpointConfigurator, IConsumerConfigurator<WorkerConsumer> consumerConfigurator)
         {
             endpointConfigurator.UseMessageRetry(r => r.Interval(5, 1000));
+            endpointConfigurator.PrefetchCount = 30;
+            endpointConfigurator.ConcurrentMessageLimit = 5; // I dont know why it wont go over 10 even if I specify
         }
 
     }

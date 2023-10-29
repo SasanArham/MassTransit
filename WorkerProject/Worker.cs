@@ -21,9 +21,10 @@
         {
             while (!stoppingToken.IsCancellationRequested)
             {
-                await _bus.Publish(new GettingStarted { Value = $"The time is {DateTimeOffset.Now}" }, stoppingToken);
+                //await _bus.Publish(new GettingStarted { Value = $"The time is {DateTimeOffset.Now}" }, stoppingToken);
+                //await Task.Delay(1, stoppingToken);
 
-                await Task.Delay(1000, stoppingToken);
+                await _bus.Publish(new GettingStarted { Value = $"Hi !" }, stoppingToken);
             }
         }
     }
