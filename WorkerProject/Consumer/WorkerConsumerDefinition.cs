@@ -1,5 +1,6 @@
 ﻿using MassTransit;
 using System;
+using System.Data.SqlTypes;
 
 namespace WorkerProject.Consumer
 {
@@ -17,7 +18,13 @@ namespace WorkerProject.Consumer
 
         protected override void ConfigureConsumer(IReceiveEndpointConfigurator endpointConfigurator, IConsumerConfigurator<WorkerConsumer> consumerConfigurator)
         {
+            // It means only exceptions of specified types are going to include in rety policy
+            endpointConfigurator.UseMessageRetry(r => r.Handle<ArgumentException>());
+            endpointConfigurator.UseMessageRetry(r => r.Handle<NullReferenceException>());
+            endpointConfigurator.UseMessageRetry(r => r.Handle<SqlAlreadyFilledException>());
+
             endpointConfigurator.UseMessageRetry(r => r.Interval(5, 1000));
+            
             // These are some other possible policies:
 
             //endpointConfigurator.UseMessageRetry(r => r.Immediate(5));
@@ -29,6 +36,8 @@ namespace WorkerProject.Consumer
             //endpointConfigurator.UseMessageRetry(r => r.Interval(10, new TimeSpan(0, 10, 0)));
 
             //endpointConfigurator.UseMessageRetry(r => r.None());
+
+
         }
 
     }
