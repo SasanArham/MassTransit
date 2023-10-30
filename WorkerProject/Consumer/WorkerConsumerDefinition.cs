@@ -24,7 +24,7 @@ namespace WorkerProject.Consumer
             endpointConfigurator.UseMessageRetry(r => r.Handle<SqlAlreadyFilledException>());
 
             endpointConfigurator.UseMessageRetry(r => r.Interval(5, 1000));
-            
+
             // These are some other possible policies:
 
             //endpointConfigurator.UseMessageRetry(r => r.Immediate(5));
@@ -37,6 +37,11 @@ namespace WorkerProject.Consumer
 
             //endpointConfigurator.UseMessageRetry(r => r.None());
 
+
+
+            // It means if retry did not workd for ArgumentException , then try a second-level retry plicy in specified times
+            endpointConfigurator.UseDelayedRedelivery(r => r.Intervals(TimeSpan.FromHours(5),TimeSpan.FromHours(15), TimeSpan.FromHours(30)));
+            endpointConfigurator.UseDelayedRedelivery(r => r.Handle<ArgumentException>());
 
         }
 
