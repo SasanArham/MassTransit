@@ -1,7 +1,10 @@
 using GettingStarted;
 using MassTransit;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using System;
 using System.Reflection;
 using System.Threading.Tasks;
 
@@ -11,13 +14,24 @@ namespace WorkerProject
     {
         public static async Task Main(string[] args)
         {
-            await CreateHostBuilder(args).Build().RunAsync();
+            var builder = CreateHostBuilder(args).Build();
+            await builder.RunAsync();
         }
         public static IHostBuilder CreateHostBuilder(string[] args)
         {
             return Host.CreateDefaultBuilder(args)
             .ConfigureServices((hostContext, services) =>
             {
+
+                var connectionString = "Server=.;Database=MassTransitDb;User Id=sa;Password=123!@#qweQWE;TrustServerCertificate=Yes;";
+                services.AddDbContext<DatabaseContext>(
+                    (sp) =>
+                    {
+                        sp.UseLazyLoadingProxies();
+                        sp.UseSqlServer(connectionString, b => b.MigrationsAssembly(typeof(DatabaseContext).Assembly.FullName));
+                    });
+                services.AddScoped<IDatabaseContext>(provider => provider.GetRequiredService<DatabaseContext>());
+
                 services.AddMassTransit(x =>
                 {
 
@@ -31,6 +45,14 @@ namespace WorkerProject
                     x.AddSagas(entryAssembly);
                     x.AddActivities(entryAssembly);
 
+                    x.AddEntityFrameworkOutbox<DatabaseContext>(o =>
+                    {
+                        o.QueryDelay = TimeSpan.FromSeconds(10);
+                        o.UseSqlServer();
+                        o.UseBusOutbox();
+                    });
+
+
                     x.UsingRabbitMq((context, cfg) =>
                     {
                         cfg.Host("localhost", "/", h =>
@@ -41,6 +63,9 @@ namespace WorkerProject
                         cfg.ConfigureEndpoints(context);
                     });
                 });
+
+                
+
                 services.AddHostedService<Worker>();
             });
         }
